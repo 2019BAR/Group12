@@ -1,6 +1,6 @@
 ---
 title: "AS3-2: 股市動態"
-author: "第 12 組 林紹煒"
+author: "第 12 組"
 date: "`r Sys.time()`"
 output:
   html_document:
@@ -117,7 +117,7 @@ sd(PG$StockPrice)
 
 __§ 2.1__ Around what year did Coca-Cola has its highest stock price in this time period? Around what year did Coca-Cola has its lowest stock price in this time period?
 ```{r}
-plot(CK$Date, CK$StockPrice, type='l')  # 1973 1980
+plot(CK$Date, CK$StockPrice, type='l',main="GGGGG")  # 1973 1980
 abline(v=CK$Date[which.max(CK$StockPrice)], col='green')
 abline(v=CK$Date[which.min(CK$StockPrice)], col='red')
 ```
@@ -134,7 +134,7 @@ abline(v = as.Date("2000-03-01"), lty=2, col='black')
 abline(v = as.Date("1983-07-01"), lty=2, col='black')
 legend("topleft",legend=c("Coke","P&G","BE","GE","IBM"),col=c("red","green","blue","orange","purple"),lwd=2,cex=0.8)
 
-#P&G
+#GE
 ```
 
 __§ 2.3__ (a) Around 1983, the stock for one of these companies (Coca-Cola or Procter and Gamble) was going up, while the other was going down. Which one was going up? 

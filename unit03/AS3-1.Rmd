@@ -1,6 +1,6 @@
 ---
 title: "AS3-1: 數位偵探"
-author: "第 12 組  林紹煒 "
+author: "第 12 組"
 date: "`r Sys.time()`"
 output: 
   html_document:
@@ -18,7 +18,9 @@ par(cex=0.8)
 options(scipen=20, digits=4, width=90)
 #
 if(!require(pacman)) install.packages("pacman")
-pacman::p_load(dplyr, d3heatmap)
+pacman::p_load(dplyr)
+install.packages("d3heatmap")
+library("d3heatmap")
 ```
 <hr>
 
@@ -108,7 +110,6 @@ head(GG$Date) #Month/Day/Year Hour：Minute
 qq = as.POSIXct(GG$Date,format="%m/%d/%y")
 par(cex=0.6)  #用來設定圖裡的參數
 hist(qq,"year",las=2,freq = T,xlab = "")
-qq
 ```
 
 ```{r}
@@ -147,11 +148,6 @@ which.max(table(GG$weekday))
 【2.5】 Which month has the largest number of motor vehicle thefts for which an arrest was made?
 ```{r}
 qq[GG$Arrest] %>% format('%m') %>% table %>% sort
-B = subset(GG,Arrest == T)
-H = as.Date(strptime(B$Date,"%m/%d/%y"))
-B$Month = months(H)
-table(B$Month) %>% sort
-
 ```
 
 <br><br>
@@ -171,7 +167,7 @@ hist(qq,"year",las=2,freq = T)
 
 【3.2】 Does it look like there were more crimes for which arrests were made in the first half of the time period or the second half of the time period?
 ```{r}
-table(H > as.Date("2007-01-01"))
+table(qq[GG$Arrest] > as.POSIXct("2006-10-31"))
 #前半期逮捕數比後半期多
 ```
 
@@ -207,8 +203,7 @@ table(GG$LocationDescription) %>% sort %>% tail(6)
 
 【4.2】 How many observations are in Top5?
 ```{r}
-(top5 = names(table(GG$LocationDescription) %>% sort %>% tail(6))[-4])
-
+top5 = GG$LocationDescription %>% table %>% sort(decr=T) %>% names %>% head %>% .[-3]
 sum(GG$LocationDescription %in% top5)  # 177510
 ```
 ```{r} 
