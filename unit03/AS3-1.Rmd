@@ -1,6 +1,6 @@
 ---
 title: "AS3-1: 數位偵探"
-author: "第 12 組  Lin Shao Wei "
+author: "第 12 組  林紹煒 "
 date: "`r Sys.time()`"
 output: 
   html_document:
