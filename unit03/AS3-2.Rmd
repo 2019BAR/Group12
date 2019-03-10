@@ -201,16 +201,16 @@ tapply(IBM$StockPrice,format(IBM$Date,"%m"),mean)-mean(IBM$StockPrice)
 
 __§ 4.2__ General Electric and Coca-Cola both have their highest average stock price in the same month. Which month is this?
 ```{r}
-sapply(list(BE=BE,CK=CK,GE=GE,IBM=IBM,PG=PG), function(df) {
-  tapply(df$Stock, format(df$Date,"%m"), mean) - mean(df$Stock)
-  }) 
-#
+tapply(GE$StockPrice,format(GE$Date,"%m"),mean) %>% sort %>% tail(1)
+tapply(CK$StockPrice,format(CK$Date,"%m"),mean) %>% sort %>% tail(1)
+#四月
 ```
 
 __§ 4.3__ For the months of December and January, every company's average stock is higher in one month and lower in the other. In which month are the stock prices lower?
 ```{r}
-#
-#
+tapply(GE$StockPrice,format(GE$Date,"%m"),mean)
+tapply(CK$StockPrice,format(CK$Date,"%m"),mean)
+# December
 ```
 
 <br><br><br>

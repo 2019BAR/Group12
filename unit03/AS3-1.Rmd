@@ -78,7 +78,7 @@ min(GG$Beat)
 
 【1.5】 How many observations have value TRUE in the Arrest variable (this is the number of crimes for which an arrest was made)?
 ```{r}
-sum(GG$Arrest)
+sum(GG$Arrest) 
 ```
 
 【1.6】 How many observations have a LocationDescription value of ALLEY?
@@ -106,8 +106,9 @@ head(GG$Date) #Month/Day/Year Hour：Minute
 
 ```{r}
 qq = as.POSIXct(GG$Date,format="%m/%d/%y")
-par(cex=0.7)  #用來設定圖裡的參數
+par(cex=0.6)  #用來設定圖裡的參數
 hist(qq,"year",las=2,freq = T,xlab = "")
+qq
 ```
 
 ```{r}
@@ -125,15 +126,15 @@ table(format(qq,"%u"), format(qq,"%H")) %>%
 
 【2.2】 What is the month and year of the median date in our dataset? 
 ```{r}
-TT = as.Date(strptime(GG$Date,"%m/%d/%y %H:%M"))  
-#strptime 把時間轉成文字
+TT = as.Date(strptime(GG$Date,"%m/%d/%y"))  
+#strptime 把時間格式轉成年月日
 median(TT)
 ```
 
 【2.3】 In which month did the fewest motor vehicle thefts occur?
 ```{r}
 GG$Month <- months(TT)
-which.min(table(GG$Month)) 
+which.min(table(GG$Month))
 ```
 
 【2.4】 On which weekday did the most motor vehicle thefts occur?
@@ -146,6 +147,11 @@ which.max(table(GG$weekday))
 【2.5】 Which month has the largest number of motor vehicle thefts for which an arrest was made?
 ```{r}
 qq[GG$Arrest] %>% format('%m') %>% table %>% sort
+B = subset(GG,Arrest == T)
+H = as.Date(strptime(B$Date,"%m/%d/%y"))
+B$Month = months(H)
+table(B$Month) %>% sort
+
 ```
 
 <br><br>
@@ -156,34 +162,34 @@ qq[GG$Arrest] %>% format('%m') %>% table %>% sort
 
 【3.1】 (a) In general, does it look like crime increases or decreases from 2002 - 2012? (b) In general, does it look like crime increases or decreases from 2005 - 2008? (c) In general, does it look like crime increases or decreases from 2009 - 2011?
 ```{r}
-hist(qq,"year",las=2)
-# 2000~2012 decrease
+hist(qq,"year",las=2,freq = T)
+
+# 2002~2012 decrease
 # 2005~2008 decrease
 # 2009~2011 increase
 ```
 
 【3.2】 Does it look like there were more crimes for which arrests were made in the first half of the time period or the second half of the time period?
 ```{r}
-table(qq > as.POSIXct("2007-01-01"))
+table(H > as.Date("2007-01-01"))
 #前半期逮捕數比後半期多
 ```
 
 【3.3】 For what proportion of motor vehicle thefts in 2001 was an arrest made?
 ```{r}
 table(GG$Arrest,format(qq,"%Y")) %>% prop.table(2) %>% round(3)
-
 # Ans：0.104
 ```
 
 【3.4】 For what proportion of motor vehicle thefts in 2007 was an arrest made?
 ```{r}
-tapply(GG$Arrest,format(qq,"%Y"),mean) %>% round(3)
+
 #Ans：0.085
 ```
 
 【3.5】 For what proportion of motor vehicle thefts in 2012 was an arrest made?
 ```{r}
-#
+# 0.039
 ```
 
 <br><br>
