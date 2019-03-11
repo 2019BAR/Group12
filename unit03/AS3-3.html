@@ -235,7 +235,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">AS3-3: 美國的人口統計和就業資料</h1>
 <h4 class="author"><em>第 12 組</em></h4>
-<h4 class="date"><em>2019-03-11 22:43:30</em></h4>
+<h4 class="date"><em>2019-03-11 22:44:45</em></h4>
 
 </div>
 
@@ -359,6 +359,51 @@ FALSE  TRUE
 <li>The Married variable being missing is related to the Citizenship value for the interviewee.</li>
 <li>The Married variable being missing is not related to the Region, Sex, Age, or Citizenship value for the interviewee.</li>
 </ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lapply</span>(CPS[<span class="kw">c</span>(<span class="st">'Region'</span>,<span class="st">'Sex'</span>,<span class="st">'Age'</span>,<span class="st">'Citizenship'</span>)], 
+       <span class="cf">function</span>(x) <span class="kw">table</span>(<span class="kw">is.na</span>(CPS<span class="op">$</span>Married), x))</code></pre></div>
+<pre><code>$Region
+       x
+        Midwest Northeast South  West
+  FALSE   24609     21432 33535 26388
+  TRUE     6075      4507  7967  6789
+
+$Sex
+       x
+        Female  Male
+  FALSE  55264 50700
+  TRUE   12217 13121
+
+$Age
+       x
+           0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
+  FALSE    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0 1795
+  TRUE  1283 1559 1574 1693 1695 1795 1721 1681 1729 1748 1750 1721 1797 1802 1790    0
+       x
+          16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   31
+  FALSE 1751 1764 1596 1517 1398 1525 1536 1638 1627 1604 1643 1657 1736 1645 1854 1762
+  TRUE     0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0
+       x
+          32   33   34   35   36   37   38   39   40   41   42   43   44   45   46   47
+  FALSE 1790 1804 1653 1716 1663 1531 1530 1542 1571 1673 1711 1819 1764 1749 1665 1647
+  TRUE     0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0
+       x
+          48   49   50   51   52   53   54   55   56   57   58   59   60   61   62   63
+  FALSE 1791 1989 1966 1931 1935 1994 1912 1895 1935 1827 1874 1758 1746 1735 1595 1596
+  TRUE     0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0
+       x
+          64   65   66   67   68   69   70   71   72   73   74   75   76   77   78   79
+  FALSE 1519 1569 1577 1227 1130 1062 1195 1031  941  896  842  763  729  698  659  661
+  TRUE     0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0
+       x
+          80   85
+  FALSE 2664 2446
+  TRUE     0    0
+
+$Citizenship
+       x
+        Citizen, Native Citizen, Naturalized Non-Citizen
+  FALSE           91956                 6910        7098
+  TRUE            24683                  163         492</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#</span></code></pre></div>
 <p><strong>§ 2.3</strong> How many states had all interviewees living in a non-metropolitan area (aka they have a missing MetroAreaCode value)? For this question, treat the District of Columbia as a state (even though it is not technically a state).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(<span class="kw">is.na</span>(CPS<span class="op">$</span>MetroAreaCode),CPS<span class="op">$</span>State)</code></pre></div>

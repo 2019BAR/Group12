@@ -131,7 +131,8 @@ __§ 2.2__  Which is the most accurate:
 + The Married variable being missing is not related to the Region, Sex, Age, or Citizenship value for the interviewee.
 
 ```{r}
-
+lapply(CPS[c('Region','Sex','Age','Citizenship')], 
+       function(x) table(is.na(CPS$Married), x))
 #
 ```
 
