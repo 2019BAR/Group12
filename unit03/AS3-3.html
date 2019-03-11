@@ -235,7 +235,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">AS3-3: 美國的人口統計和就業資料</h1>
 <h4 class="author"><em>第 12 組</em></h4>
-<h4 class="date"><em>2019-03-11 18:53:27</em></h4>
+<h4 class="date"><em>2019-03-11 22:43:30</em></h4>
 
 </div>
 
@@ -390,9 +390,9 @@ FALSE  TRUE
         West Virginia Wisconsin Wyoming
   FALSE           344      1882       0
   TRUE           1065       804    1624</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#3</span></code></pre></div>
-<p>How many states had all interviewees living in a metropolitan area? Again, treat the District of Columbia as a state.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#2</span></code></pre></div>
+<p>How many states had all interviewees living in a metropolitan area? Again, treat the District of Columbia as a state.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#3</span></code></pre></div>
 <p><strong>§ 2.4</strong> Which region of the United States has the largest proportion of interviewees living in a non-metropolitan area?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tapply</span>(<span class="kw">is.na</span>(CPS<span class="op">$</span>MetroAreaCode),CPS<span class="op">$</span>Region,mean) <span class="op">%&gt;%</span><span class="st"> </span>sort</code></pre></div>
 <pre><code>Northeast     South      West   Midwest 
