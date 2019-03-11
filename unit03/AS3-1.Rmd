@@ -16,13 +16,15 @@ knitr::opts_chunk$set(comment = NA)
 knitr::opts_knit$set(global.par = TRUE)
 par(cex=0.8)
 options(scipen=20, digits=4, width=90)
-#
-if(!require(pacman)) install.packages("pacman")
-pacman::p_load(dplyr)
-install.packages("d3heatmap")
-library("d3heatmap")
 ```
+
 <hr>
+```{r results='hide', message=FALSE, warning=FALSE}
+if(!require(devtools)) install.packages("devtools")
+if(!require(devtools)) devtools::install_github("hadley/emo")
+if(!require(pacman)) install.packages("pacman")
+pacman::p_load(magrittr, dplyr, d3heatmap)
+```
 
 犯罪是一個國際關注的問題，但它在不同的國家以不同的方式記錄和處理。 在美國，聯邦調查局（FBI）記錄了暴力犯罪和財產犯罪。 此外，每個城市都記錄了犯罪行為，一些城市發布了有關犯罪率的數據。 伊利諾伊州芝加哥市從2001年開始在線發布犯罪數據。
 
