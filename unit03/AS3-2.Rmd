@@ -127,7 +127,7 @@ abline(v=CK$Date[which.min(CK$StockPrice)],col="red")
 __§ 2.2__ In March of 2000, the technology bubble burst, and a stock market crash occurred. According to this plot, which company's stock dropped more?
 ```{r}
 plot(CK$Date[121:385],CK$StockPrice[121:385],main="I am almost dead",xlab="Date",ylab="StockPrice",type = "l",col="red",lwd=1,ylim = c(0,210))
-lines(PG$Date[121:385],GE$StockPrice[121:385],col="green",lwd=2)
+lines(PG$Date[121:385],GE$StockPrice[121:385],col="green",lwd=1)
 lines(BS$Date[121:385],BS$StockPrice[121:385],col="blue",lwd=1)
 lines(GE$Date[121:385],PG$StockPrice[121:385],col="orange",lwd=1)
 lines(IBM$Date[121:385],IBM$StockPrice[121:385],col="purple",lwd=1)
@@ -137,7 +137,7 @@ legend("topleft",legend=c("Coke","P&G","BE","GE","IMB"),col=c("red","green","blu
 #lwd 為線的粗細程度
 #lyt 為線的類型，1為實線，2-6為虛線(虛的程度不同)
 #legend 做出標示
-#cex 調整文字大小
+#cex 調整框架大小
 # Ans : P&G
 ```
 
@@ -149,7 +149,7 @@ __§ 2.3__ (a) Around 1983, the stock for one of these companies (Coca-Cola or P
 (b) In the time period shown in the plot, which stock generally has lower values?
 ```{r}
 mean(CK$StockPrice) > mean(PG$StockPrice)
-# Ans : P&G
+# Ans : CocaCola
 ```
 
 
