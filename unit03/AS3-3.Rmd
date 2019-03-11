@@ -140,7 +140,7 @@ lapply(CPS[c('Region','Sex','Age','Citizenship')],
 __§ 2.3__ How many states had all interviewees living in a non-metropolitan area (aka they have a missing MetroAreaCode value)? For this question, treat the District of Columbia as a state (even though it is not technically a state).
 ```{r}
 table(is.na(CPS$MetroAreaCode),CPS$State)
-#2
+#2個地方完全沒有捷運，分別是Alaska、Wyoming
 ```
 
 How many states had all interviewees living in a metropolitan area? Again, treat the District of Columbia as a state.
