@@ -119,8 +119,6 @@ plot(CK$Date,CK$StockPrice,type = "l",main="GGGGG")
 abline(v=CK$Date[which.max(CK$StockPrice)],col="green")
 abline(v=CK$Date[which.min(CK$StockPrice)],col="red")
 # Ans : 1973 1980
-#type = "l"為線圖
-#abline(v=x)畫出一條通過x的垂直線
 ```
 
 
@@ -134,10 +132,6 @@ lines(IBM$Date[121:385],IBM$StockPrice[121:385],col="purple",lwd=1)
 abline(v = as.Date("2000-03-01"),lty=2,col="black")
 abline(v = as.Date("1983-07-01"),lty=2,col="black")
 legend("topleft",legend=c("Coke","P&G","BE","GE","IMB"),col=c("red","green","blue","orange","purple"),lwd=2,cex=0.8)
-#lwd 為線的粗細程度
-#lyt 為線的類型，1為實線，2-6為虛線(虛的程度不同)
-#legend 做出標示
-#cex 調整文字大小
 # Ans : P&G
 ```
 
