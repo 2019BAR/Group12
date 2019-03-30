@@ -210,7 +210,6 @@ ans=sapply(seq.time,function(x){
   -5*(1-pro)+95*pro
 })
 tail(sort(ans))
-sum(tail(sort(ans)))-1.967636-2.653571
 
 #賭金5元，平均獲利為4.577元
 #賭金10元，平均獲利為8.515元
