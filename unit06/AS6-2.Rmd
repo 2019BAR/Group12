@@ -79,7 +79,7 @@ abline(h=1, col='orange', lwd=0.25, lty=2)
 rug(W)
 # Empirical CDF
 #最初始會直接ecdf(D)
-plot(ecdf(W), cex=0, verticals=T, lwd=2, col='purple', add=T) 
+plot(ecdf(W), cex=0, verticals=T, lwd=2, col='purple', add=T) #W的CDF
 #add決定要不要重畫，T就直接疊在圖上
 
 # Histogram PDF
@@ -92,7 +92,7 @@ abline(h=0, col='lightgray', lwd=0.25)
 # Histogram CDF
 adj = (bx[2] - bx[1])/2
 steps = stepfun(bx-adj, c(0, sapply(bx, function(b) mean(W <= b))))
-plot(steps, cex=0, col='#33CC337F', lwd=3, lty=1, add=T)
+plot(steps, cex=0, col='Black', lwd=3, lty=1, add=T) #W化成直方圖後的CDF
 
 # Smooth PDF
 Adjust = 0.5    # bandwidth adjustment
