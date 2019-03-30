@@ -154,7 +154,7 @@ abline(h=0, col='lightgray', lwd=0.25)
 # Histogram CDF
 adj = (bx[2] - bx[1])/2
 steps = stepfun(bx-adj, c(0, sapply(bx, function(b) mean(E <= b))))
-plot(steps, cex=0, col='#33CC337F', lwd=3, lty=1, add=T)
+plot(steps, cex=0, col='Black', lwd=3, lty=1, add=T)
 
 # Smooth PDF
 Adjust = 0.5    # bandwidth adjustment
