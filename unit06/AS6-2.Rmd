@@ -1,6 +1,6 @@
 ---
 title: 老忠實問答 with R 
-author: 中山大學管理學院 林紹煒 
+author: 中山大學管理學院 R語言第12組
 date: "`r Sys.time()`" 
 output: 
   html_document:
