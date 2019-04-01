@@ -139,6 +139,8 @@ legend("topleft",legend=c("Coke","P&G","BE","GE","IMB"),col=c("red","green","blu
 #legend 做出標示
 #cex 調整框架大小
 # Ans : P&G
+
+
 ```
 
 __§ 2.3__ (a) Around 1983, the stock for one of these companies (Coca-Cola or Procter and Gamble) was going up, while the other was going down. Which one was going up? 
@@ -172,6 +174,21 @@ legend("topright",legend=c("Coke","P&G","BE","GE","IMB"),col=c("red","green","bl
 # Ans : GE
 ```
 
+```{r}
+install.packages("ggplot2")
+library("ggplot2")
+
+ggplot(CK,aes(x=Date,y=StockPrice,col="blue"))+
+geom_line()+
+geom_line(BS,aes(x=Date,y=StockPrice,col="red"))
+
+
+```
+
+```{r}
+
+```
+
 __§ 3.2__ Which stock reaches the highest value in the time period 1995-2005?
 ```{r}
 # Ans : IBM
@@ -179,7 +196,7 @@ __§ 3.2__ Which stock reaches the highest value in the time period 1995-2005?
 
 __§ 3.3__ In October of 1997, there was a global stock market crash that was caused by an economic crisis in Asia. Comparing September 1997 to November 1997, which companies saw a decreasing trend in their stock price? (Select all that apply.)
 ```{r}
-# Ans : P&G、Boeing
+# Ans : GE、Boeing
 ```
 
 __§ 3.4__ In the last two years of this time period (2004 and 2005) which stock seems to be performing the best, in terms of increasing stock price?
