@@ -235,7 +235,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">老忠實問答 with R</h1>
 <h4 class="author"><em>中山大學管理學院 R語言第12組</em></h4>
-<h4 class="date"><em>2019-03-30 21:35:47</em></h4>
+<h4 class="date"><em>2019-04-01 12:41:26</em></h4>
 
 </div>
 
@@ -264,13 +264,13 @@ W =<span class="st"> </span>faithful<span class="op">$</span>newwaiting  <span c
 <span class="co">#3. 可以，計算其面積即可估計</span>
 <span class="co">#4. 可以，複雜的事情簡化、；數值標記不能，只能了解哪個時間點發生過</span>
 <span class="co">#5. 平滑模型，將噴發時間點連成平滑曲線，即為形容老忠實的模型</span>
-<span class="co">#6. 若論預測，直方圖會比較準，因為可以當模型看出其趨勢，我們定義「準」為預測時間，數值標記表示一個時間點，無法看出其機率分布</span></code></pre></div>
+<span class="co">#6. 若論預測，直方圖會比較準，因為可以當模型看出其趨勢，我們定義「準」為預測時間，數值標記表示一個時間點，看現在較為精確，預測會不準</span></code></pre></div>
 <p>【B.調整參數】調整一下模型參數的滑桿 …<br>   ■  你覺得最合適的直方圖欄數(support/binwidth)是？ 為甚麼？<br>   ■  最合適的平滑模型頻寬(bandwidth)呢？<br>   ■  調高欄寬和頻寬會讓模型變複雜，還是變簡單呢？<br>   ■  模型越複雜，它跟實際值之間的誤差是越大、還是越小？<br>   ■  那麼，越複雜的模型就會越準，對嗎？<br></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#1. 16欄，平滑模型約接近平滑</span>
 <span class="co">#2. 0.6，配上欄數16最平滑</span>
 <span class="co">#3. 調高欄寬即欄數減少，與調高頻寬都會讓模型越簡單</span>
 <span class="co">#4. 模型越複雜跟資料會約接近，但會過於偏頗，無法進行預測</span>
-<span class="co">#5. 當然不對</span></code></pre></div>
+<span class="co">#5. 就描述樣本資料來說很準；但拿來預估母體會失真</span></code></pre></div>
 <p>【C.建立模型、估計機率】 <br> 請從課堂筆記的程式碼找出來 … <br>   ■  從變數向量(D)求出機率密度曲線(DEN) <br>   ■  將機率密度曲線(DEN)轉換成機率密度函數(PDF) <br>   ■  對機率密度函數(PDF)做積分，算出機率(PROB) <br> 這三行程式，然後… <br>   ■  將頻寬調整參數(adjust)設為1，算出「等待時間」落在80到90之間的機率<br>   ■  將頻寬調整參數設為0.5，算出等待時間落在80到90之間的機率<br>   ■  算出來的機率比較高的就是比較好的模型，對嗎？ 為甚麼？<br></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Frame</span>
 <span class="kw">par</span>(<span class="dt">cex=</span><span class="fl">0.7</span>) <span class="co">#調整字體大小</span>
@@ -281,7 +281,7 @@ W =<span class="st"> </span>faithful<span class="op">$</span>newwaiting  <span c
 <span class="co"># Empirical PDF</span>
 <span class="kw">rug</span>(W)
 <span class="co"># Empirical CDF</span>
-<span class="co">#最初始會直接ecdf(D)</span>
+<span class="co">#最初始會直接ecdf(W)</span>
 <span class="kw">plot</span>(<span class="kw">ecdf</span>(W), <span class="dt">cex=</span><span class="dv">0</span>, <span class="dt">verticals=</span>T, <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">col=</span><span class="st">'purple'</span>, <span class="dt">add=</span>T) <span class="co">#W的CDF</span>
 <span class="co">#add決定要不要重畫，T就直接疊在圖上</span>
 
@@ -373,31 +373,32 @@ i2=<span class="kw">seq</span>(<span class="dv">2</span>,<span class="dv">6</spa
 p1=<span class="kw">data.frame</span>(i1,i2)
 <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">41</span>){
   p1[i,<span class="dv">3</span>]=<span class="kw">integrate</span>(PDF,i1[i],i2[i])<span class="op">$</span>value
-}</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#1. 要參加</span>
-<span class="co">#2. 3.9~4.9之區間</span>
-<span class="co">#3. 平均獲利17.7元</span>
+}
+
 p1[<span class="kw">which</span>(p1<span class="op">$</span>V3<span class="op">==</span><span class="kw">max</span>(p1<span class="op">$</span>V3)),]</code></pre></div>
 <pre><code>##     i1  i2        V3
 ## 30 3.9 4.9 0.4766026</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">100</span><span class="op">*</span><span class="fl">0.477</span><span class="op">-</span><span class="dv">30</span></code></pre></div>
 <pre><code>## [1] 17.7</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#1. 要參加</span>
+<span class="co">#2. 3.9~4.9之區間</span>
+<span class="co">#3. 平均獲利17.7元</span></code></pre></div>
 <p>假如賭場老闆從零開始把每10秒鐘設為一個區間，每個區間的賭金是五塊錢 … <br>   ■  你要怎麼押注，才能獲得最高的期望值呢？<br></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i3=<span class="kw">seq</span>(<span class="dv">1</span>,<span class="dv">6</span><span class="op">-</span><span class="dv">1</span><span class="op">/</span><span class="dv">6</span>,<span class="dt">by=</span><span class="fl">0.1</span>)
-i4=<span class="kw">seq</span>(<span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">/</span><span class="dv">6</span>,<span class="dv">6</span>,<span class="dt">by=</span><span class="fl">0.1</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i3=<span class="kw">seq</span>(<span class="dv">1</span>,<span class="dv">6</span><span class="op">-</span><span class="dv">1</span><span class="op">/</span><span class="dv">6</span>,<span class="dt">by=</span><span class="dv">1</span><span class="op">/</span><span class="dv">6</span>)
+i4=<span class="kw">seq</span>(<span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">/</span><span class="dv">6</span>,<span class="dv">6</span>,<span class="dt">by=</span><span class="dv">1</span><span class="op">/</span><span class="dv">6</span>)
 p2=<span class="kw">data.frame</span>(i3,i4)
-<span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">49</span>){
+<span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">30</span>){
   p2[i,<span class="dv">3</span>]=<span class="kw">integrate</span>(PDF,i3[i],i4[i])<span class="op">$</span>value
 }
 <span class="kw">head</span>(p2[<span class="kw">order</span>(p2<span class="op">$</span>V3,<span class="dt">decreasing =</span> T),],<span class="dv">6</span>)</code></pre></div>
-<pre><code>##     i3       i4         V3
-## 34 4.3 4.466667 0.09522926
-## 35 4.4 4.566667 0.09516505
-## 33 4.2 4.366667 0.09122583
-## 36 4.5 4.666667 0.08938446
-## 32 4.1 4.266667 0.08487797
-## 9  1.8 1.966667 0.08145966</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#下注在 4.3~4.467、4.4~4.567、4.2~4.367、4.1~4.267、1.8~1.967</span></code></pre></div>
+<pre><code>##          i3       i4         V3
+## 21 4.333333 4.500000 0.09576606
+## 22 4.500000 4.666667 0.08938446
+## 20 4.166667 4.333333 0.08932398
+## 6  1.833333 2.000000 0.08225759
+## 19 4.000000 4.166667 0.07653571
+## 7  2.000000 2.166667 0.06967636</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#下注在 4.33分~4.5分、4.5分~4.67分、4.17分~4.33分、4.0分~4.17分、2.0分~2.17分</span></code></pre></div>
 <p>  ■  你的賭金和期望值各是多少？<br></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Adjust=<span class="fl">0.5</span>
 DEN=<span class="kw">density</span>(E,<span class="dt">adjust=</span>Adjust)
@@ -405,7 +406,7 @@ PDF=<span class="kw">approxfun</span>(DEN<span class="op">$</span>x,DEN<span cla
 seq.time=<span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">1</span><span class="op">/</span><span class="dv">6</span>)
 ans=<span class="kw">sapply</span>(seq.time,<span class="cf">function</span>(x){
   pro=<span class="kw">integrate</span>(PDF,x,(x<span class="op">+</span><span class="dv">1</span><span class="op">/</span><span class="dv">6</span>))<span class="op">$</span>value
-  <span class="op">-</span><span class="dv">5</span><span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>pro)<span class="op">+</span><span class="dv">95</span><span class="op">*</span>pro
+  (<span class="op">-</span><span class="dv">5</span>)<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>pro)<span class="op">+</span><span class="dv">95</span><span class="op">*</span>pro
 })
 <span class="kw">tail</span>(<span class="kw">sort</span>(ans))</code></pre></div>
 <pre><code>## [1] 1.967636 2.653571 3.225759 3.932398 3.938446 4.576606</code></pre>
@@ -416,7 +417,7 @@ ans=<span class="kw">sapply</span>(seq.time,<span class="cf">function</span>(x){
 <span class="co">#賭金25元，平均獲利為18.327元</span>
 <span class="co">#賭金30元，平均獲利為20.294元</span></code></pre></div>
 <p>將獲利的期望值和賭金的比值稱為「期望投資報酬率」 … <br></p>
-<p>  ■  「最大期望投資報酬率」和「最大期望報酬」的投資策略是一樣的嗎？<br> Answer：最大期望投資報酬率為投入期間總利潤/投入成本；最大期望報酬就是投入期間總利潤 <br>   ■  你認為哪一個策略目標比較好呢？ 為什麼？<br> Answer：我prefer最大期望投資報酬率，因為是在考慮成本的情況下定策略</p>
+<p>  ■  「最大期望投資報酬率」和「最大期望報酬」的投資策略是一樣的嗎？<br> Answer：不一樣，最大期望投資報酬率為投入期間總利潤/投入成本；最大期望報酬就是投入期間總利潤 <br>   ■  你認為哪一個策略目標比較好呢？ 為什麼？<br> Answer：我prefer最大期望投資報酬率，因為是在考慮成本的情況下定策略</p>
 
 
 
