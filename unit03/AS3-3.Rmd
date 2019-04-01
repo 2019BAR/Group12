@@ -131,8 +131,7 @@ __§ 2.2__  Which is the most accurate:
 + The Married variable being missing is not related to the Region, Sex, Age, or Citizenship value for the interviewee.
 
 ```{r}
-lapply(CPS[c('Region','Sex','Age','Citizenship')], 
-       function(x) table(is.na(CPS$Married), x))
+
 #
 ```
 
@@ -140,12 +139,12 @@ lapply(CPS[c('Region','Sex','Age','Citizenship')],
 __§ 2.3__ How many states had all interviewees living in a non-metropolitan area (aka they have a missing MetroAreaCode value)? For this question, treat the District of Columbia as a state (even though it is not technically a state).
 ```{r}
 table(is.na(CPS$MetroAreaCode),CPS$State)
-#2個地方完全沒有捷運，分別是Alaska、Wyoming
+#3
 ```
 
 How many states had all interviewees living in a metropolitan area? Again, treat the District of Columbia as a state.
 ```{r}
-#3
+#2
 ```
 
 __§ 2.4__ Which region of the United States has the largest proportion of interviewees living in a non-metropolitan area?
