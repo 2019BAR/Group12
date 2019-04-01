@@ -72,13 +72,14 @@ hist(W)
 par(cex=0.7) #調整字體大小
 plot(0,0,xlim=c(3,10),ylim=c(0,1),xlab="等待時間(每十分鐘)", 
      ylab="密度 or (累計)機率", main="分布、機率與密度")
-abline(h=1, col='orange', lwd=0.25, lty=2)
+abline(h=1, col='orange', lwd=0.25, lty=2) # 機率最大為1
 
 # Empirical PDF
 rug(W)
 # Empirical CDF
-#最初始會直接ecdf(D)
-plot(ecdf(W), cex=0, verticals=T, lwd=2, col='purple', add=T) #add=T 代表不重畫，疊在圖上
+plot(ecdf(W), cex=0, verticals=T, lwd=2, col='purple', add=T) 
+#最初始會直接把ecdf(W)畫在圖上
+#add=T 代表不重畫，疊在圖上
 
 # Histogram PDF
 Bins = 20                            # no. bins 要多少欄位
@@ -110,9 +111,8 @@ rect(x1,-0.1,x2,1.2,col= rgb(0,1,0,alpha=0.2),border=NA)
 # polygon(c(x, x2, x1),  c(PDF(x), 0, 0), col="#FF99003F", border=NA)
 # Calculate Probability
 (integrate(PDF, x1, x2)$value)
- #3. 對機率密度函數(PDF)做積分，算出機率(PROB)
+#3. 對機率密度函數(PDF)做積分，算出機率(PROB)
 ```
-
 
 ```{r}
 #4. Adjust=1的情況下機率為 0.269
