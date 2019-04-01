@@ -13,6 +13,39 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+### <span style="font-size:22px">`r "\U1F4A1"` 回顧上週學習重點：</span>  {data-height=250}
+<p class="wwl">
+
+【A】從第五周的「[有獎徵答](https://gtonychuo.github.io/2019RPB/unit05/quiz05.html)」我們學到使用`頻率`、`密度`和`機率`來表示`隨機變數`的`分布`<br>
+&emsp;■ 分布：變數的值所出現的頻率<br>
+&emsp;■ 連續變數的分布有三種表達方式：次數(頻率)、密度、機率<br>
+&emsp;■ `連續變數`和`離散變數`的分布的表達方式是不一樣的<br>
+<br>
+【B】從這一份練習，我們學到：<br>
+&emsp;■ 平均值、標準差等`統計量`可以表達隨機變數的概況，但它們無法完整表示隨機變數的分布<br>
+&emsp;■ 透過`圖形`或`數學函數`，我們才能清楚地表示和運算(估計、預測)隨機變數的分布<br>
+&emsp;■ `模型`：將現實抽象化(Abstract of Reality)，使其好懂(好溝通)或好計算<br>
+&emsp;■ 圖形和數學函數都可以用來表示隨機變數的分布，前者好懂，後者方便運算<br>
+&emsp;■ `數值標記`、`直方圖`和`平滑密度曲線`都可以寫成`機率密度函數(PDF)`<br>
+&emsp;■ 數值標記和直方圖的函數形式比較複雜，也容易有量化誤差<br>
+&emsp;■ 因此平滑密度曲線通常比較適合用來表示連續變數的分布<br>
+&emsp;■ 機率密度函數(PDF)積分之後就可以得到`累計機率函數(CDF)`，前者好懂，後者好算<br>
+<br>
+【C】資料、模型、方法、參數：<br>
+&emsp;■ 透過調整`方法參數`，同一份資料用同一種`方法`可以做出不同的`模型`<br>
+&emsp;■ 通常模型越複雜，它跟訓練資料之間的誤差就越小<br>
+&emsp;■ 但是模型太複雜就會失去一般性，反而不能夠準確的估計訓練資料以外的對象<br>
+&emsp;■ 所以我們需要用方法參數來控制分析方法的複雜度，避免`過度適配`(`over fitting`)<br>
+<br>
+【D】估計機率的程序：<br>
+&emsp;■ 選擇分析方法<br>
+&emsp;■ 藉由調整方法參數盡量找出最適(PDF)模型<br>
+&emsp;■ 透過積分，從PDF求出CDF<br>
+&emsp;■ 根據變數的範圍，從CDF求出機率<br>
+<br>
+</p class="wwl">
+
+
 ```{r}
 head(faithful)
 faithful$newwaiting <- (faithful$waiting)/10
@@ -23,7 +56,7 @@ hist(W)
 ```
 
 <p class="wwl">
-###<span style="font-size:24px">`r "\U1F605"` 學習重點：</span><br>  {data-height=250}
+###<span style="font-size:24px">`r "\U1F605"` 問題討論：</span><br>
 
 【A.選擇方法】<br>
 &nbsp; ■ &nbsp;我們為甚麼需要隨機變數？ 什麼時候我們需要用到隨機變數？<br>
@@ -95,11 +128,12 @@ plot(steps, cex=0, col='#33CC337F', lwd=3, lty=1, add=T)
 
 # Smooth PDF
 Adjust = 0.5    # bandwidth adjustment
-DEN = density(W, adjust = Adjust)  #1. 將變數向量轉為平滑線
-lines(DEN, col='gold', lwd=3)
+DEN = density(W, adjust = Adjust)  
+lines(DEN, col='gold', lwd=3) #1. 從變數向量(D)求出機率密度曲線(DEN)
+
 
 # Smooth CDF
-PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)
+PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0) #2. 將機率密度曲線(DEN)轉換成機率密度函數(PDF)
 x = seq(min(W),max(W),0.1)
 y = sapply(x, function(i) integrate(PDF, -Inf, i)$value)
 lines(x, y, col='red', lwd=3, lty=2) 
@@ -110,8 +144,8 @@ rect(x1,-0.1,x2,1.2,col= rgb(0,1,0,alpha=0.2),border=NA)
 # x = seq(x1, x2, length=100)
 # polygon(c(x, x2, x1),  c(PDF(x), 0, 0), col="#FF99003F", border=NA)
 # Calculate Probability
-(integrate(PDF, x1, x2)$value)
-#3. 對機率密度函數(PDF)做積分，算出機率(PROB)
+(integrate(PDF, x1, x2)$value) #3. 對機率密度函數(PDF)做積分，算出機率(PROB)
+
 ```
 
 ```{r}
@@ -170,9 +204,9 @@ lines(x, y, col='red', lwd=3, lty=2)
 i1=seq(1,5,by=1)
 i2=seq(2,6,by=1)
 p1=data.frame(i1,i2)
-for(i in 1:41){
+for(i in 1:5){
   p1[i,3]=integrate(PDF,i1[i],i2[i])$value
-  }
+}
 ```
 
 ```{r}
@@ -194,7 +228,7 @@ for(i in 1:30){
   }
 head(p2[order(p2$V3,decreasing = T),],6)
 
-#下注在 4.333~4.5、4.50~4.667、4.167~4.333、1.833~2.0、4.0~4.167、2.0~2.167
+#下注在 第4.333~4.5分鐘、第4.50~4.667分鐘、第4.167~4.333分鐘、第1.833~2.0分鐘、第4.0~4.167分鐘、第2.0~2.167分鐘
 ```
 &nbsp; ■ &nbsp;你的賭金和期望值各是多少？<br>
 ```{r}
@@ -220,8 +254,11 @@ sum(tail(sort(ans)))-1.967636-2.653571
 
 
 將獲利的期望值和賭金的比值稱為「期望投資報酬率」 … <br>
-
 &nbsp; ■ &nbsp;「最大期望投資報酬率」和「最大期望報酬」的投資策略是一樣的嗎？<br>
-Answer：最大期望投資報酬率為投入期間總利潤/投入成本；最大期望報酬就是投入期間總利潤 <br>
+```{r}
+#Answer：最大期望投資報酬率為投入期間總利潤/投入成本；最大期望報酬就是投入期間總利潤 <br>
+```
 &nbsp; ■ &nbsp;你認為哪一個策略目標比較好呢？ 為什麼？<br>
-Answer：我prefer最大期望投資報酬率，因為是在考慮成本的情況下定策略
+```{r}
+##Answer：我prefer最大期望投資報酬率，因為是在考慮成本的情況下定策略
+```
