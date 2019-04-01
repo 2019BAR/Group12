@@ -1,6 +1,6 @@
 ---
-title: 老忠實問答 with R 
-author: 中山大學管理學院 R語言第12組
+title: 資料案例:老忠實 with R 
+author: 中山大學 管理學院 R語言 第12組
 date: "`r Sys.time()`" 
 output: 
   html_document:
@@ -23,7 +23,7 @@ hist(W)
 ```
 
 <p class="wwl">
-<span style="font-size:24px">`r "\U1F605"` 學習重點：</span><br>
+###<span style="font-size:24px">`r "\U1F605"` 學習重點：</span><br>  {data-height=250}
 
 【A.選擇方法】<br>
 &nbsp; ■ &nbsp;我們為甚麼需要隨機變數？ 什麼時候我們需要用到隨機變數？<br>
@@ -139,9 +139,9 @@ abline(h=1, col='orange', lwd=0.25, lty=2)
 # Empirical PDF
 rug(E)
 # Empirical CDF
-#最初始會直接ecdf(D)
 plot(ecdf(E), cex=0, verticals=T, lwd=2, col='purple', add=T) 
-#add決定要不要重畫，T就直接疊在圖上
+#最初始會直接把ecdf(E)畫在圖上
+#add=T 代表不重畫，疊在圖上
 
 # Histogram PDF
 Bins = 20                            # no. bins 要多少欄位
@@ -167,19 +167,18 @@ y = sapply(x, function(i) integrate(PDF, -Inf, i)$value)
 lines(x, y, col='red', lwd=3, lty=2) 
 
 # Every Range probability
-i1=seq(1,5,by=0.1)
-i2=seq(2,6,by=0.1)
+i1=seq(1,5,by=1)
+i2=seq(2,6,by=1)
 p1=data.frame(i1,i2)
 for(i in 1:41){
   p1[i,3]=integrate(PDF,i1[i],i2[i])$value
-}
+  }
 ```
 
-
 ```{r}
-#1. 要參加
-#2. 3.9~4.9之區間
-#3. 平均獲利17.7元
+#1. 因為平均獲利為17.7元，所以要參加
+#2. 由網頁得知，在3.9~4.9之區間，估計機率最大(47.7%)
+#3. 平均獲利(期望獲利)17.7元
 p1[which(p1$V3==max(p1$V3)),]
 100*0.477-30
 ```
@@ -187,15 +186,15 @@ p1[which(p1$V3==max(p1$V3)),]
 &nbsp; ■ &nbsp;你要怎麼押注，才能獲得最高的期望值呢？<br>
 
 ```{r}
-i3=seq(1,6-1/6,by=0.1)
-i4=seq(1+1/6,6,by=0.1)
+i3=seq(1,6-1/6,by=1/6)
+i4=seq(1+1/6,6,by=1/6)
 p2=data.frame(i3,i4)
-for(i in 1:49){
+for(i in 1:30){
   p2[i,3]=integrate(PDF,i3[i],i4[i])$value
-}
+  }
 head(p2[order(p2$V3,decreasing = T),],6)
 
-#下注在 4.3~4.467、4.4~4.567、4.2~4.367、4.1~4.267、1.8~1.967
+#下注在 4.333~4.5、4.50~4.667、4.167~4.333、1.833~2.0、4.0~4.167、2.0~2.167
 ```
 &nbsp; ■ &nbsp;你的賭金和期望值各是多少？<br>
 ```{r}
