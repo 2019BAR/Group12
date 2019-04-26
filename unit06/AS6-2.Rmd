@@ -7,10 +7,15 @@ output:
     highlight: pygments
     theme: flatly
     css: style.css
+   
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
 ```
 
 ```{r}
@@ -298,8 +303,14 @@ for(i in 1:41){
 }
 
 p1[which(p1$V3==max(p1$V3)),]
-100*0.477-30
 
+#期望值
+exp1=100*0.477-30
+exp1
+#想法:期望獲利-成本
+exp2=70*0.477+(-30)*0.523
+exp2
+#想法: 期望值數學式:sigma of (xi*pi)
 
 ```
 
@@ -344,6 +355,27 @@ tail(sort(ans))
 #賭金30元，平均獲利為20.294元
 ```
 
+```{r}
+#獲利相關統計圖
+m=9
+ex<-data.frame(1:m)
+ex_cu<-data.frame(1:m)
+arr_p2=arrange(p2,desc(V3))
+for(i in 1:m){
+ex[i,1]=arr_p2[i,3]*100-5
+}
+ex_cu[1,1]=ex[1,1]
+for(i in 2:m){
+ex_cu[i,1]=ex_cu[i-1,1]+ex[i,1]
+}
+for(i in 1:m){
+ex_cu[i,2]=5*i
+}
+names(ex_cu)[1]<-"累積報酬"
+names(ex_cu)[2]<-"累積成本"
+ex_cu<-mutate(ex_cu,期望投資報酬率=累積報酬/累積成本)
+ex_cu
+```
 
 將獲利的期望值和賭金的比值稱為「期望投資報酬率」 … <br>
 
