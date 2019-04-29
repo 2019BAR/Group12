@@ -1,7 +1,7 @@
 ---
-title: "Untitled"
-author: "Untitled"
-date: "2019年4月22日"
+title: "期中專案Olist電商分析"
+author: "第12組"
+date: "`r Sys.time()`"
 output: 
 
   html_document:
@@ -48,37 +48,115 @@ if (!require('plyr'))
   library(plyr);
 }
 
+if (!require('tidyverse')) 
+{
+  install.packages('tidyverse');
+  library(tidyverse);
+}
+if (!require('plotly')) 
+{
+  install.packages('plotly');
+  library(plotly);
+}
+if (!require('gapminder')) 
+{
+  install.packages('gapminder');
+  library(gapminder);
+}
+if (!require('FactoMineR')) 
+{
+  install.packages('FactoMineR');
+  library(FactoMineR);
+} 
+if (!require('d3heatmap')) 
+{
+  install.packages('d3heatmap');
+  library(d3heatmap);
+} 
 
-library(tidyverse)
-
-pacman::p_load(dplyr, FactoMineR, d3heatmap)
+pacman::p_load(factoextra)
 ```
 
 ```{r}
+library(readr)
+All_Data <- read_csv("All Data.csv")
 olist<- read_csv("All Data.csv")
+All_Data$actual_pay=(All_Data$payment_value - All_Data$freight_value)
+All_Data$quantity=(All_Data$actual_pay/All_Data$price) %>% round()
+All_Data$reviewdate=format(as.Date(All_Data$review_answer_timestamp),"%Y/%m")
+All_Data$Year=format(as.Date(All_Data$review_answer_timestamp),"%Y")
 ```
-#全巴西交易量(圓餅圖)取前五大州
-#熱賣商品
-##篩選五個城市
+
+
+##綜觀三年交易量與利潤
+```{r}
+totalsell=aggregate(All_Data$quantity,list(All_Data$Year),sum,na.rm=T)
+colnames(totalsell)=c("Year","Quantity")
+totalpay=aggregate(All_Data$actual_pay,list(All_Data$Year),sum,na.rm=T)
+colnames(totalpay)=c("Year","Payment")
+
+ggplot(totalsell,aes(x=Year,y=Quantity))+
+  geom_histogram(stat="identity",fill="green")+
+  geom_line(data= totalpay,aes(x=Year,y=Payment,group=1,color="totalpay"))+
+  scale_y_log10()+
+  scale_colour_manual(name = "Line",values="blue")
+```
+
+
+##全巴西交易量，取交易最多的五州
 ```{r}
 five_city<-filter(olist,customer_state %in% c("SP","PR","RJ","RS","MG"))
+five_city$actuall_pay=five_city$payment_value-five_city$freight_value
+five_city$quantity=(five_city$actuall_pay/five_city$price) %>% round()
 ```
+
 ##篩選五大洲的五大熱門產品
 ```{r}
-top10_in_SP<-tapply(five_city$payment_value,five_city$product_category_name_english,sum) %>%
-head(5) %>% names()
+top10_in_SP<-table(five_city$product_category_name_english) %>% sort %>%
+tail(5) %>% names()
 top10_in_SPf<-filter(five_city,product_category_name_english %in% top10_in_SP)
+top10_in_SP
 ```
 ##五大熱門產品在五大洲的銷售量
 ```{r}
   ggplot()+
-  geom_bar(data= top10_in_SPf,aes(customer_state,fill=product_category_name_english),width=0.8,position = "dodge",alpha=0.6)+scale_y_log10()
+  geom_bar(data=top10_in_SPf,aes(customer_state,fill=product_category_name_english),width=0.8,position = "dodge",alpha=0.6)+
+  scale_y_log10()
 ```
-<br>
 
+##主成分分析
+```{r}
+top10_in_SPf<-filter(top10_in_SPf,is.na(top10_in_SPf$price)==FALSE)
+g<-split(top10_in_SPf,top10_in_SPf$customer_state)
+
+
+SP<-tapply(g$SP$quantity, g$SP$product_category_name_english, sum,na.rm=T)
+PR<-tapply(g$PR$quantity, g$PR$product_category_name_english, sum,na.rm=T)
+RJ<-tapply(g$RJ$quantity, g$RJ$product_category_name_english, sum,na.rm=T)
+MG<-tapply(g$MG$quantity, g$MG$product_category_name_english, sum,na.rm=T)
+RS<-tapply(g$RS$quantity, g$RS$product_category_name_english, sum,na.rm=T)
+FIVE<-rbind(SP,PR,RJ,RS,MG)
+fpca<-as.data.frame(FIVE)
+fpca1<-select(fpca,top10_in_SP)
+```
+
+```{r}
+pca = PCA(fpca1[,1:5])
+
+get_eigenvalue(pca)
+
+pca$ind$cos2
+```
+
+
+```{r}
+fviz_pca_biplot(
+  pca, pointsize="cos2", repel=T,
+  col.var="red", col.ind="#E7B800", alpha.ind=0.3)
+```
 
 #最常購買時間
-```{r results='hide', message=FALSE, warning=FALSE, echo=F}
+```{r}
 o=as.POSIXct(as.character(five_city$order_purchase_timestamp,format="%Y-%m-%d %H:%M"))
 month = format(o,"%m")
 weekday = format(o,"%u")
@@ -90,60 +168,35 @@ Sys.setlocale("LC_ALL", "en_US")
 qplot(month,data=five_city,geom="bar",fill=weekday)
 ```
 
-```{r}
-table(format(o,"%H"),format(o,"%u")) %>% 
+```{r fig.height=3.2, fig.width=6.4}
+table(format(o,"%H"),format(o,"%u")) %>% t %>%
   as.data.frame.matrix %>% 
   d3heatmap(F,F,col=colorRamp(c("#00bfff","#ffffe6","#ff6666")))
 ```
 
 #支付方式
-```{r results='hide', message=FALSE, warning=FALSE, echo=F}
+```{r}
 ggplot(five_city,aes(x=customer_state,fill=payment_type))+
   geom_bar(position = "stack")
 ```
 
 
+#五州的評價走勢圖
 
-#客單價
-
-每月州payment_value
-```{r results='hide', echo=F}
-#
-#avg_payment5=aggregate(big5state$actuall_pay,list(big5state$customer_state),mean,na.#rm=T)
-#colnames(avg_payment5)=c("state","payment")                       
-#ggplot(avg_payment5,aes(x=state,y=payment))+
-#  geom_bar(stat = "identity",fill="pink")
-```
-
-#買/賣家評價
-
-#五大州平均評價走勢
 ```{r}
-All_Data <- olist
-All_Data$actuall_pay=All_Data$payment_value-All_Data$freight_value
-All_Data$reviewdate=format(as.Date(All_Data$review_answer_timestamp),"%Y/%m")
-```
-
-
-```{r results='hide', message=FALSE, warning=FALSE, echo=F}
-big5state=filter(All_Data,customer_state %in% c("SP","RJ","MG","RS","PR"))
-tapply(All_Data$actuall_pay,All_Data$customer_state,mean,na.rm=T)
-```
-
-```{r results='hide', message=FALSE, warning=FALSE, echo=F}
-SP=filter(big5state,customer_state=="SP")
+SP=filter(All_Data,customer_state=="SP")
 SPmonthly_score=aggregate(SP$review_score,list(SP$reviewdate),mean,na.rm=T)
 colnames(SPmonthly_score)=c("Month","Score")
-RJ=filter(big5state,customer_state=="RJ")
+RJ=filter(All_Data,customer_state=="RJ")
 RJmonthly_score=aggregate(RJ$review_score,list(RJ$reviewdate),mean,na.rm=T)
 colnames(RJmonthly_score)=c("Month","Score")
-MG=filter(big5state,customer_state=="MG")
+MG=filter(All_Data,customer_state=="MG")
 MGmonthly_score=aggregate(MG$review_score,list(MG$reviewdate),mean,na.rm=T)
 colnames(MGmonthly_score)=c("Month","Score")
-RS=filter(big5state,customer_state=="RS")
+RS=filter(All_Data,customer_state=="RS")
 RSmonthly_score=aggregate(RS$review_score,list(RS$reviewdate),mean,na.rm=T)
 colnames(RSmonthly_score)=c("Month","Score")
-PR=filter(big5state,customer_state=="PR")
+PR=filter(All_Data,customer_state=="PR")
 PRmonthly_score=aggregate(PR$review_score,list(PR$reviewdate),mean,na.rm=T)
 colnames(PRmonthly_score)=c("Month","Score")
 
@@ -156,42 +209,4 @@ ggplot(SPmonthly_score,aes(x=Month,y=Score,group=1,color="SP"))+
   theme(axis.text.x=element_text(angle = 90, colour = "black"))+
   scale_colour_manual(name = "State",
                       values=c("red","blue","black","green","purple"))
-  
 ```
-#銷售建議？
-
-
-
-
-#Dawson
-
-##整理資料
-###依消費額分三族群
-```{r pressure, echo=FALSE}
-olist<-olist %>% filter(is.na(payment_value)== FALSE)
-max_top10<-max(olist$payment_value)
-olist$payment_group<-cut(olist$payment_value,c(0,62,190,max_top10),c("low","median","large"))
-
-```
-
-###各城市消費額
-```{r}
-
-ggplot() +
-  geom_bar(data= olist,aes(customer_state,fill=payment_group),width=1)+
-  coord_flip()
-```
-
-
-
-```{r}
-#ggplot() +
-#  geom_bar(data= five_city,aes(customer_state,fill=payment_group),width=0.8,position#="fill")+
- # coord_flip()
-
-```
-
-```{r}
-
-```
-
