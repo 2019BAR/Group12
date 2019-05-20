@@ -102,27 +102,27 @@ for(f in logit) {
 
 <font size=3 color=red face="微軟正黑">語法格式，ifelse('條件', '條件若成立：做A', '條件若不成立：做B')</font><br>
 
-<font size=6 color=Black face="Georgia">What do the blue/cyan lines means?</font><br>
+<font size=4 color=Black face="Georgia">Q：What do the blue/cyan lines means?</font><br>
 
-<font size=5 color=DarkGreen face="微軟正黑">令綠色點為成功事件，即Y=1</font><br>
+<font size=4 color=DarkGreen face="微軟正黑">令綠色點為成功事件，即Y=1</font><br>
 
-<font size=5 color=Blue face="微軟正黑">藍線表示logit=0、odd=1時，即Y=1(成功事件)發生的機率為0.5</font><br>
-
-
-<font size=5 color=DarkCyan face="微軟正黑">青線：</font><br>
-
-<font size=5 color=Blue face="微軟正黑">藍線以上部分logit>0、odd>1，即Y=1(成功事件)發生的機率比Y=0(失敗事件)發生的機率高</font><br>
-
-<font size=5 color=Blue face="微軟正黑">藍線以下部分logit<0、odd<1，即Y=1(成功事件)發生的機率比Y=0(失敗事件)發生的機率低</font><br>
-
-<font size=5 color=Blue face="微軟正黑">左下至右上的線，分別代表Y=1(成功事件)的機率為0.1~0.9/<font><br>
+<font size=4 color=Blue face="微軟正黑">藍線表示logit=0、odd=1時，即Y=1(成功事件)發生的機率為0.5</font><br>
 
 
-<font size=6 color=Black face="Georgia">Given any point in the figure above, how can you tell its (predicted) probability approximately?</font><br>
+<font size=4 color=DarkCyan face="微軟正黑">青線：</font><br>
 
-<font size=5 color=Blue face="微軟正黑">依據任一點其最靠近的線判斷發生Y=1(成功事件)的機率，以最右下角(一綠一紅)為例</font><br>
+<font size=4 color=Blue face="微軟正黑">藍線以上部分logit>0、odd>1，即Y=1(成功事件)發生的機率比Y=0(失敗事件)發生的機率高</font><br>
 
-<font size=5 color=Blue face="微軟正黑">兩點發生成功事件機率皆在0.5~0.6之間，實際結果為一個成功(綠點)一個失敗(紅點)</font><br>
+<font size=4 color=Blue face="微軟正黑">藍線以下部分logit<0、odd<1，即Y=1(成功事件)發生的機率比Y=0(失敗事件)發生的機率低</font><br>
+
+<font size=4 color=Blue face="微軟正黑">左下至右上的線，分別代表Y=1(成功事件)的機率為0.1~0.9/<font><br>
+
+
+<font size=4 color=Black face="Georgia">Q：Given any point in the figure above, how can you tell its (predicted) probability approximately?</font><br>
+
+<font size=4 color=Blue face="微軟正黑">依據任一點其最靠近的線判斷發生Y=1(成功事件)的機率，以最右下角(一綠一紅)為例</font><br>
+
+<font size=4 color=Blue face="微軟正黑">兩點發生成功事件機率皆在0.5~0.6之間，實際結果為一個成功(綠點)一個失敗(紅點)</font><br>
 
 <br><hr>
 
@@ -166,12 +166,12 @@ abline(v=0,h=0.5,col='pink')
 points(0,0.5,pch=20,cex=1.5,col='red')
 ```
 
-<font size=6 color=Black face="Georgia">What are the definition of "logit"" & "logistic"" function`? What is the relationship between them?</font><br>
+<font size=4 color=Black face="Georgia">Q：What are the definition of "logit"" & "logistic"" function`? What is the relationship between them?</font><br>
 
-<font size=5 color=Blue face="微軟正黑">logit：Odd = p/(1−p)為勝算，ln(Odd)=logit ，即對勝算取自然對數，為一線性函數</font><br>
+<font size=4 color=Blue face="微軟正黑">logit：Odd = p/(1−p)為勝算，ln(Odd)=logit ，即對勝算取自然對數，為一線性函數</font><br>
 
-<font size=5 color=Blue face="微軟正黑">logistic function：母體發生成功事件(Y=1)的機率，P=Exp(fx)/(1+Exp(fx))，非線性函數</font><br>
+<font size=4 color=Blue face="微軟正黑">logistic function：母體發生成功事件(Y=1)的機率，P=Exp(fx)/(1+Exp(fx))，非線性函數</font><br>
 
-<font size=7 color=Crimson face="微軟正黑">★兩者之間可以互相轉換</font><br>
+<font size=6 color=Crimson face="微軟正黑">★兩者之間可以互相轉換</font><br>
 
 <br><br><br><hr>
