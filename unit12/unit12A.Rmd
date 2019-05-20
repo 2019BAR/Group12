@@ -55,18 +55,20 @@ b = coef(glm1); b   # extract the regression coef
 
 Given `x1=3, x2=4`, what are the predicted logit, odd and probability?
 ```{r}
-logit = sum(b * c(1, 2, 3))
+logit = sum(b * c(1, 3, 4))
 odd = exp(logit)
 prob = odd/(1+odd)
 c(logit=logit, odd=odd, prob=prob)
 ```
 
-<span style="font-size:24px"> `r "\U1F5FF"` : </span>
+<span style="font-size:24px"> `r "\U1F5FF"` : </span> 
 What if `x1=2, x2=3`?
 
 ```{r}
-#    logit        odd       prob 
-#-2.0850539  0.1243004  0.1105580
+logit = sum(b*c(1,2,3))
+odd = exp(logit)
+prob = odd/(1+odd)
+c(logit=logit , odd=odd , prob=prob)
 ```
 <br>
 
@@ -170,7 +172,8 @@ points(0,0.5,pch=20,cex=1.5,col='red')
 
 <font size=4 color=Blue face="微軟正黑">logit：Odd = p/(1−p)為勝算，ln(Odd)=logit ，即對勝算取自然對數，為一線性函數</font><br>
 
-<font size=4 color=Blue face="微軟正黑">logistic function：母體發生成功事件(Y=1)的機率，P=Exp(fx)/(1+Exp(fx))，非線性函數</font><br>
+<font size=4 color=Blue face="微軟正黑">logistic function：母體發生成功事件(Y=1)的機率，P=Exp(fx)/(1+Exp(fx))，非線性函數，亦為把logit轉回probability y=1的函數</font><br>
+
 
 <font size=6 color=Crimson face="微軟正黑">★兩者之間可以互相轉換</font><br>
 
