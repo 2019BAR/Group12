@@ -124,7 +124,7 @@ for(f in logit) {
 
 <font size=4 color=Blue face="微軟正黑">依據任一點其最靠近的線判斷發生Y=1(成功事件)的機率，以最右下角(一綠一紅)為例</font><br>
 
-<font size=4 color=Blue face="微軟正黑">兩點發生成功事件機率皆在0.5~0.6之間，實際結果為一個成功(綠點)一個失敗(紅點)</font><br>
+<font size=4 color=Blue face="微軟正黑">兩點發生成功事件機率在0.5~0.6之間，實際結果為一個成功(綠點)一個失敗(紅點)</font><br>
 
 <br><hr>
 
