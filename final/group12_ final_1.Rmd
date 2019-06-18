@@ -45,7 +45,7 @@ nrow(Z)
 
 ##### 處理離群值
 ```{r}
-sapply(Z[,7:9], quantile, prob=c(.99, .999, .9995)) # Quantile of Variables
+sapply(Z[,7:9], quantile, prob=c(.99,.999, .9995)) # Quantile of Variables
 ```
 
 ```{r}
