@@ -1,0 +1,685 @@
+---
+title: Term Project
+author: Group12  林紹煒、劉于慈、曹惠理、田芳穎、賴韻涵、高英培
+date: "`r Sys.time()`"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    css: style.css
+---
+
+<br><hr>
+
+```{r results='hide' ,echo=F, message=F, cache=F, warning=F}
+rm(list=ls(all=T))
+pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr, ROCR,devtools,googleVis,tidyverse,FactoMineR,factoextra,corrplot,latex2exp,manipulate)
+```
+<hr>
+
+### 1. 資料整理
+
+#### 1.1 交易項目紀錄：`Z`
+
+##### 讀取資料
+```{r results='hide' ,echo=T, message=F, cache=F, warning=F}
+Z = read_csv("ta_feng_all_months_merged.csv") %>% data.frame %>% 
+  setNames(c("date","cust","age","area","cat","prod","qty","cost","price"))
+```
+
+將資料讀取後，依序命名為：「交易日期、顧客ID、年齡、居住地區、產品種類、產品名稱、產品件數、成本、價格」
+
+##### 資料格式轉換
+```{r}
+Z$date = as.Date(Z$date, format="%m/%d/%Y")
+Z$age[is.na(Z$age)] = "na"
+Z$age = factor(Z$age, levels=c(
+  "<25","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64",">65","na"), labels=c(
+  "a20","a25","a30","a35","a40","a45","a50","a55","a60","a65","na"
+  )) %>% as.character
+Z$area = paste0("z",Z$area)
+summary(Z) #交易次數 817741
+nrow(Z)
+```
+
+
+##### 處理離群值
+```{r}
+sapply(Z[,7:9], quantile, prob=c(.99, .999, .9995)) # Quantile of Variables
+```
+
+```{r}
+Z = subset(Z, qty<=24 & cost<=3800 & price<=4000) # Remove Outliers
+nrow(Z) #817182
+```
+
+將資料整理後，四個月內有81782筆交易資料，平均一天約有六千多筆交易，我們推測這是一家類似
+Walmart這類的大型賣場
+
+
+##### 彙總訂單 Assign Transaction ID
+```{r}
+Z$tid = group_indices(Z, date, cust) # same customer same day
+```
+
+##### 資料總覽
+```{r}
+# Number of customer, category, product id, transaction id
+sapply(Z[c("cust","cat","prod","tid")], n_distinct)
+```
+
+```{r}
+summary(Z) # Summary of Item Records
+```
+<br><hr>
+
+#### 1.2 交易紀錄：`X`
+
+##### 交易資料彙整
+```{r}
+X = Z %>% group_by(tid) %>% summarise(
+  date = date[1],             # 交易日期  
+  cust = cust[1],             # 顧客 ID
+  age = age[1],               # 顧客 年齡級別
+  area = area[1],             # 顧客 居住區別
+  items = n(),                # 交易項目(總)數
+  pieces = sum(qty),          # 產品(總)件數
+  total = sum(price),         # 交易(總)金額
+  gross = sum(price - cost)   # 毛利
+  ) %>% data.frame            # 119422
+```
+
+##### 交易摘要
+```{r}
+summary(X)
+```
+
+##### 處理離群值
+```{r}
+sapply(X[,6:9], quantile, prob=c(.999, .9995, .9999)) # Check Quantile
+```
+
+```{r}
+X = subset(X, items<=62 & pieces<95 & total<16000) # Remove Outliers
+nrow(X) #119328
+```
+
+##### 每周交易次數
+```{r fig.height=3, fig.width=7}
+month = format(X$date,"%m")
+X$month= format(X$date,"%m")
+weekday = format(X$date,"%u")
+ggplot(X,aes(x=weekday))+geom_bar()
+```
+
+##### 每月與每週的交易次數(依月份個別作圖)
+```{r}
+ggplot()+geom_bar(data=X,aes(x=weekday,fill=month))+facet_grid(~month)
+```
+
+##### 每周交易次數與年齡層之間的關係(標準化)
+```{r}
+library(d3heatmap)
+table(X$age,format(X$date,"%u")) %>%
+  {./rowSums(.)} %>%
+  as.data.frame.matrix %>% 
+  d3heatmap(F,F,col=colorRamp(c("#00bfff","#ffffe6","#ff6666")))
+```
+<br><hr>
+
+#### 1.3 顧客資料：`A`
+
+##### 顧客資料彙整
+```{r}
+d0 = max(X$date) + 1
+A = X %>% mutate(
+  days = as.integer(difftime(d0, date, units="days"))
+  ) %>% 
+  group_by(cust) %>% summarise(
+    r = min(days),      # 最近一次購買距今天數
+    s = max(days),      # 最早一次購買距今天數
+    f = n(),            # 購買次數
+    m = mean(total),    # 平均購買金額
+    rev = sum(total),   # 總營收貢獻
+    raw = sum(gross),   # 總毛利貢獻
+    age = age[1],       # 年齡層
+    area = area[1]      # 郵遞區號
+  ) %>% data.frame      # 32241
+```
+
+##### 顧客摘要
+```{r}
+summary(A) 
+```
+
+##### 變數的分布情況
+```{r}
+par(mfrow=c(2,2), mar=c(3,3,4,2))
+hist(A$r,freq=T,main="recency",xlab="",ylab="",cex.main=2)
+hist(A$s,freq=T,main="seniority",xlab="",ylab="",cex.main=2)
+hist(pmin(A$f,10),0:10,freq=T,main="pmin(A$frequency,10)",xlab="",ylab="",cex.main=2)
+hist(log(A$m,10),freq=T,main="log(money)",xlab="",ylab="",cex.main=2)
+```
+
+圖形與變數解析：
+
++ recency：最近一次購買距今天數
+    + 圖形中可以發現，最近一次購買距今天數10天內的人數較多，代表有些較活躍的顧客，最近持續購買中。
+    + 理論而言，最近一次購買距今天數越短代表是比較好的顧客，提供即時的商品或服務最可能會有反應。
+
++ seniority：最早一次購買距今天數
+    + 高起來的地方，代表在當時吸收很多顧客
+
++ frequency：在限定時間內的購買次數
+    + 購買次數越多的顧客，代表他的滿意度越高，忠誠度也可能越高。
+    + 以pmin來看`購買次數`，設置上限為10次，超過10次以10次計算的加總，發現呈現離散分布。
+
++ log(money)：money代表購買金額，或客單價
+    + 取log之後，會變的較為常態分佈，較能看出趨勢變化。
+
+在商務數據分析中，上述的RFM為數據分析中最好的指標，我們可以透過RFM模型了解顧客的價值以及對企業的幫助。
+```{r}
+A0 = A; X0 = X; Z0 = Z
+```
+<br><hr>
+
+### 2. 分群
+
+#### 2.1 層級式集群分析
+
+##### RFM顧客分群
+```{r}
+set.seed(111)
+A$grp = kmeans(scale(A[,c(2,4,5)]),7)$cluster
+table(A$grp)
+```
+
+利用集群式分析k-means，將資料依照不同屬性將顧客做分群。<br>
+k-means分完群會把分群的向量放在"cluster"這個欄位裡面，用table(A$grp)看族群大小。
+
+##### 顧客群組屬性
+```{r}
+group_by(A, grp) %>% summarise(
+  recent=mean(r), 
+  freq=mean(f), 
+  money=mean(m), 
+  size=n() ) %>% 
+  mutate( revenue = size*money/1000 )  %>% 
+  filter(size > 1) %>% 
+  ggplot(aes(x=freq, y=money)) +
+  geom_point(aes(size=revenue, col=recent),alpha=0.5) +
+  scale_size(range=c(4,30)) +
+  scale_color_gradient(low="green",high="red") +
+  scale_x_log10() + scale_y_log10(limits=c(200,6000)) + 
+  geom_text(aes(label = size ),size=3) +
+  theme_bw() + guides(size=F) +
+  labs(title="Customer Segements",
+       subtitle="(bubble_size:revenue_contribution; text:group_size)",
+       color="Recency") +
+  xlab("Frequency (log)") + ylab("Average Transaction Amount (log)")
+```
+
+圖形解析：
+
++ 將現有顧客分七群，每個泡泡分別代表一群。
+
++ 4種屬性，大小、顏色、X軸與Y軸可供判讀。
+
+    + X軸：購買頻率。
+    + Y軸：平均交易金額(客單價)。
+    + 泡泡大小：反映這群顧客對你的營收貢獻。
+    + 泡泡顏色：越紅就代表越久沒來買，可能快要流失了。
+
++ 從這些泡泡圖，我們可以知道營收來源主要來自於哪裡。
+
++ 將現有顧客分成七群，每個泡泡分別代表一群。
+
++ 共有4項指標可作分析，分別為以下4點：
+
+    + X軸：購買頻率。
+    + Y軸：平均交易金額(客單價)。
+    + 泡泡大小：反映這群顧客對你的營收貢獻。
+    + 泡泡顏色：越紅就代表越久沒來買，可能快要流失了。
+    
++ 從泡泡圖可以看出，這間店的Frequency整體偏左，表示顧客對這間店的滿意度偏低，進而推論他們對這間店的忠誠度可能偏低。
+
++ 在活躍顧客裡(綠色泡泡)分為三群，1374為Frequency極高的忠誠顧客群；10525為客單價偏低但時常購買的顧客群；4739為客單價高的VIP顧客群。
+
++ 在兩個黃色泡泡的顧客群中，發現上方867的顧客群人數少但營收貢獻度跟下方7751的顧客群差不多，因此我們應該想辦法留住867的顧客群，提升我們總體客單價，也可以設計行銷方案提高7751顧客群的Frequency，併入10525顧客群。
+
++ 最左邊的兩個紅色泡泡，代表我們即將流失顧客群，有客單價偏高的1811，以及客單價偏低的5210，後續我們可以針對他們做進一步分析，看是甚麼原因導致這兩個顧客群消費頻率偏低。
+<br><hr>
+#### 2.2 規則分群
+
+##### 平均購買週期
+```{r}
+K = as.integer(sum(A$s[A$f>1]) / sum(A$f[A$f>1])) ; K
+```
+回購顧客的平均購買週期 `K = 17 days`
+
+##### 顧客分群規則
+```{r}
+STS = c("N1","N2","C1","C2","D1","D2","D3")
+Status = function(rx,fx,mx,sx,K) {factor(
+  ifelse(sx < 3.5*K,
+         ifelse(fx*mx > 1593, "N2", "N1"),
+         ifelse(rx < 2*K,
+                ifelse(sx/fx < 0.41*K,"C2","C1"),
+                ifelse(rx < 4*K,"D1",
+                       ifelse(rx < 5*K,"D2","D3")))), STS)}
+```
+
+依照三個參數(seniority, frequency, recency)把顧客分群，用ifelse條件式來將顧客區分新潛力顧客、新顧客、核心顧客、主力顧客、瞌睡顧客、半睡顧客、沉睡顧客。
+
++ 第一層用”第一次消費距今天天數”小於兩個月來判斷是新潛力顧客/新顧客，其中又以”頻率和客單價的乘積”大於1600的族群作為新潛力顧客(N2)，其餘為新顧客(N1)。
+
++ 第二層用”最近一次消費距今天天數”小於一個月來判斷是主力/核心顧客。其中又以平均購買週期小於一星期的族群作為核心顧客(C2)，其餘為主力顧客(C1)。
+
++ 第三層用”最近一次消費距今天天數”大於70天來判斷是瞌睡顧客(D1)，其餘則用”最近一次消費距今天天數”大於90天來作為半睡顧客(D2)，剩餘者則為沉睡顧客(D3)。
+
+<center>
+
+![圖三、顧客分群規則](fig/customer.jpg)
+
+##### 顧客資料彙整
+```{r}
+d0 = max(X$date) + 1
+A = X %>% mutate(
+  days = as.integer(difftime(d0, date, units="days"))
+  ) %>% 
+  group_by(cust) %>% summarise(
+    r = min(days),            # 最近一次購買距今天數
+    s = max(days),            # 第一次購買距今天數
+    f = n(),                  # 購買次數
+    m = mean(total),          # 平均購買金額
+    rev = sum(total),         # 總營收貢獻
+    raw = sum(gross),         # 總毛利貢獻
+    age = age[1],             # 年齡層
+    area = area[1],           # 郵遞區號
+    Status= Status(r,f,m,s,K) # 顧客分群
+  ) %>% data.frame            # 28599
+summary(A)
+```
+
+##### 顧客資料視覺化
+```{r}
+Sta = A$Status
+A_IND= A[,2:7] %>% scale() %>% data.frame
+par(cex=0.8)
+split(A_IND,Sta) %>% sapply(colMeans) %>% barplot(beside=T,col=rainbow(6))
+legend('topright',legend=colnames(A_IND),fill=rainbow(6))
+```
+<br><hr>
+
+**D族群：S值偏高，代表是早期就出現的顧客，r值偏高，距離上次購買日數已有一段時間，採用比較刺激的行銷策略喚醒此群顧客，但行銷主力並不在此。**
+
+D1：假死顧客，瞌睡顧客對於這家店的認識有一定時間，有一半的機會成為主力顧客，但也有另一半的機會成為半睡顧客，且極少數會仍保留於此狀態中，雖然CLV偏低，但若成流轉成為主力顧客仍有一定潛力存在，為了增加成為主力顧客的機會，我們利用e-mail行銷，針對此群顧客寄出老顧客的限時特惠商品或是折價券，吸引瞌睡顧客重新回到店裡消費，再加以利用會員制度讓顧客留住在店中。 
+
+D2：半死顧客，此群顧客的CLV值低，且多數會流轉成為沈睡顧客，少數會變成瞌睡顧客，由於顧客保留價值低，故對於此群顧客我們採用不分群的行銷策略模式，利用特惠、週年慶、特賣的方式吸引顧客上門。
+
+D3：全死顧客，此類顧客極難再轉為其他種類顧客，此群顧客價值低，保留所造成的效果也不明顯，故採用與S2一樣的不針對性做法，採用較消極的行銷方式。
+<br><hr>
+
+**C族群：採用提高忠誠度的行銷方式保留此群顧客，其為我們的行銷主力對象。 **
+
+C1：主力顧客：主力顧客的CLV為第三高，其比較容易流轉成瞌睡顧客，為了避免變成瞌睡顧客我們必須增強此群的忠誠度，像是設立一些會員分級獎勵制度，越高等級的顧客就能享有越多的尊爵會員優惠，並且每年贈送生日禮等等。藉此吸引主力顧客持續在店消費，降低成為瞌睡顧客的機會。 
+
+C2：核心顧客：核心顧客的CLV為最高，其也不太容易轉成其他群顧客，在會員至當中此群顧客最終會成為最高等級會員，以最高等級的會員優惠、無微不至的特別服務，讓核心顧客有美好的消費體驗，持續保留核心顧客。
+<br><hr>
+
+**N族群：S值偏低，代表是近期出現的顧客，r值偏低，距離上次購買日數短，採用持續吸引的方式將新顧客到店消費成為習慣，成為新的R族群顧客，為行銷主力對象。 **
+
+N1：新顧客：新顧客屬於還在觀察、觀望的一族群，其消費貢獻不高，CLV極低，流轉為潛力顧客的機會也不高，但必須持續培養新顧客成為忠誠顧客，增加店的業績成長，故即使效益看似不高也必須做一些保留的行銷策略，可以利用一些充滿新鮮感的行銷方式像是集點好禮、現金回饋、新客好禮禮包分階段贈送的方式吸引其持續到店消費。 
+
+N2：新潛力顧客：此群顧客對店的收益貢獻相當高，CLV極高，有一定機會成為R2顧客，且有很大機會被保留於原來狀態，故要對此群顧客進行積極的顧客保留行銷方式，可進行新會員入會好禮，將新潛力顧客變成會員，對會員定期推出有趣、優惠的行銷活動，讓其更習慣於在這裡消費，也可以透過寄送e-mail的方式寄送新顧客的專屬優惠。 
+
+<br><hr>
+
+### 3. 資料切割
+
+#### 3.1 準備預測變數 (X)
+
+##### 劃分日期
+Remove data after the demarcation date(`2001-02-01`)
+```{r}
+feb01 = as.Date("2001-02-01")
+Z = subset(Z0, date < feb01)    # 618212
+```
+
+##### 交易資料彙整(2001.11-2002.02)
+```{r}
+X = group_by(Z, tid) %>% summarise(
+  date = first(date),  # 交易日期
+  cust = first(cust),  # 顧客 ID
+  age = first(age),    # 顧客 年齡級別
+  area = first(area),  # 顧客 居住區別
+  items = n(),                # 交易項目(總)數
+  pieces = sum(qty),          # 產品(總)件數
+  total = sum(price),         # 交易(總)金額
+  gross = sum(price - cost)   # 毛利
+  ) %>% data.frame     # 88387
+summary(X)
+```
+
+##### 處理離群值
+```{r}
+sapply(X[,6:9], quantile, prob=c(.999, .9995, .9999)) # Check Quantile
+```
+
+```{r}
+X = subset(X, items<=64 & pieces<=98 & total<=11260) # Remove Outliers
+```
+
+##### 顧客資料彙整(去除離群值後)
+```{r}
+d0 = max(X$date) + 1
+A = X %>% mutate(
+  days = as.integer(difftime(d0, date, units="days"))
+  ) %>% 
+  group_by(cust) %>% summarise(
+    r = min(days),            # 最近一次購買距今天數
+    s = max(days),            # 第一次購買距今天數
+    f = n(),                  # 購買次數
+    m = mean(total),          # 平均購買金額
+    rev = sum(total),         # 總營收貢獻
+    raw = sum(gross),         # 總毛利貢獻
+    age = age[1],             # 年齡層
+    area = area[1],           # 郵遞區號
+    Status= Status(r,f,m,s,K) # 顧客分群
+  ) %>% data.frame            # 28584
+summary(A)
+```
+<br><hr>
+#### 3.2 準備目標變數 (Y)
+
+##### 交易資料彙整(2002.03)
+```{r}
+feb = filter(X0, date>= feb01) %>% group_by(cust) %>% 
+  summarise(amount = sum(total))  # 16899
+```
+
+##### The Target for Regression - `A$amount`
+```{r}
+A = merge(A, feb, by="cust", all.x=T)
+```
+
+##### The Target for Classification - `A$buy`
+```{r}
+A$buy = !is.na(A$amount)
+```
+
+##### 交易資料摘要
+```{r}
+summary(A)
+```
+
+##### Contest Dataset
+
+```{r}
+X = subset(X, cust %in% A$cust & date < as.Date("2001-02-01"))
+Z = subset(Z, cust %in% A$cust & date < as.Date("2001-02-01"))
+set.seed(2019)
+spl = sample.split(A$buy, SplitRatio=0.46)
+c(nrow(A), sum(spl), sum(!spl))
+```
+
+```{r}
+A2 = subset(A, buy) %>% mutate_at(c("m","rev","amount"), log10)
+n = nrow(A2)
+set.seed(2019)
+spl2 = 1:n %in% sample(1:n, round(0.7*n))
+c(nrow(A2), sum(spl2), sum(!spl2))
+```
+<br><hr>
+
+### 4. 建立模型
+
+在這個案例裡面，資料是從2001.11-2002.02，所以我們可以假設現在的時間是2002.02，我們想要用現有的資料建立模型，來預測每一位顧客：
+
++ 在2002.03是否會來購買 (保留率：Retain)
++ 若前來購買的話，會買多少錢 (購買金額：Revenue)
+
+但是，我們並無2002.03的資料，為了建立模型，需先把時間回推一期，也就是說：
+
++ 用2002.01以前的資料整理出預測變數(X) 
++ 用2002.02的資料整理出目標變數(Y) 
+
+假如2002.03的情況(跟2002.01比)沒有太大的變化的話，接下來我們就可以使用該模型，以2002.02的資料，預測2002.03的狀況
+<br><hr>
+
+#### 類別模型
+接著我們來預測顧客是否會回購，使用類別迴歸模型來預測保留率。
+
+##### 訓練與測試資料分割
+```{r}
+TR = subset(A, spl)
+TS = subset(A, !spl)
+```
+##### 建立類別模型
+```{r}
+#利用邏輯式回歸來預測顧客是否會回購
+glm1 = glm(buy ~ ., TR[,c(2,4,10,12)], family=binomial) 
+summary(glm1)
+```
+##### 估計類別模型準確性
+```{r}
+pred =  predict(glm1, TS, type="response")
+cm = table(actual = TS$buy, predict = pred > 0.5) ; cm
+acc.ts = cm %>% {sum(diag(.))/sum(.)}; acc.ts          # 正確率 0.69998
+colAUC(pred, TS$buy)                                   # 辨識率 0.749
+prediction(pred, TS$buy) %>%                           # ROC CURVE 
+  performance("tpr", "fpr") %>% 
+  plot(print.cutoffs.at=seq(0,1,0.1))
+```
+
++ 混淆矩陣可以看出我們預測的結果及實際結果的關係。
++ 辨識率(AUC)作為檢視一個模型鑑別能力的好壞，也是ROC曲線下的面積。
+<br><hr>
+
+#### 數量模型
+接著我們預測會來購買的人會花費多少金額，使用迴歸來預測回購金額。
+##### 訓練與測試資料分割
+```{r}
+A2 = subset(A, A$buy) %>% mutate_at(c("m","rev","amount"), log10)
+TR2 = subset(A2, spl2)
+TS2 = subset(A2, !spl2)
+```
+
+##### 建立數量模型
+```{r}
+lm1 = lm(amount ~ ., TR2[,c(2,4,5:7,8,10,11)])
+summary(lm1)
+```
+從上面可看出僅有某些變數對模型具有顯著的解釋力，而獲得判定係數為0.2861的表現。
+
+##### 估計數量模型準確性
+```{r}
+r2.tr = summary(lm1)$r.sq
+SST = sum((TS2$amount - mean(TR2$amount))^ 2)
+SSE = sum((predict(lm1, TS2) -  TS2$amount)^2)
+r2.ts = 1 - (SSE/SST)
+c(r2.tr, r2.ts)
+plot(TR2$amount, predict(lm1), col='pink', cex=0.65)
+abline(0,1,col='red')
+```
+
+### 5. 估計顧客終身價值(CLV)
+```{r}
+d0 = max(X0$date) + 1
+B = X0 %>% 
+  filter(date >= as.Date("2000-12-01")) %>% 
+  mutate(days = as.integer(difftime(d0, date, units="days"))) %>%
+  group_by(cust) %>% summarise(
+    r = min(days),            # 最近一次購買距今天數
+    s = max(days),            # 第一次購買距今天數
+    f = n(),                  # 購買次數
+    m = mean(total),          # 平均購買金額
+    rev = sum(total),         # 總營收貢獻
+    raw = sum(gross),         # 總毛利貢獻
+    age = age[1],             # 年齡層
+    area = area[1],           # 郵遞區號
+    Status= Status(r,f,m,s,K) # 顧客分群
+  ) %>% data.frame            # 28531
+```
+
+##### 2002.03的預測值
+使用模型對2002.02的資料做預測，對資料中的每一位顧客，預測她們在2002.03的保留率和購買金額。
+```{r}
+B$ProbRetain = predict(glm1, B, type="response")    # 預測2002.03的保留率
+B2 = B %>% mutate_at(c("m","rev"), log10)
+B$PredRevnue = 10^predict(lm1, B2)                  # 預測2002.03的購買金額
+par(mfrow=c(1,2), cex=0.8)
+hist(B$ProbRetain,main="Probablity of Retain")
+hist(log(B$PredRevnue,10),main="Predict of Revenue")
+```
+
+##### 估計顧客終身價值(CLV)
+
+透過計算顧客終生價值讓我們了解每一個顧客的潛在價值有多大 。
+
+<center>顧客$i$的終生價值</center>
+
+$$ V_i = \sum_{t=0}^N g \times m_i \frac{r_i^t}{(1+d)^t} = g \times m_i \sum_{t=0}^N (\frac{r_i}{1+d})^t  $$
+<center>$m_i$、$r_i$：顧客$i$的預期(每期)營收貢獻、保留機率</center>
+
+<center>$g$、$d$：公司的(稅前)營業利潤利率、資金成本</center>
+
+```{r}
+g = 0.5   # (稅前)獲利率
+N = 5     # 期數 = 5
+d = 0.1   # 利率 = 10%
+
+B$CLV = g * B$PredRevnue * rowSums(sapply(
+  0:N, function(i) (B$ProbRetain/(1+d))^i ) )
+
+summary(B$CLV)
+```
+
+##### 比較各族群的價值
+將各族群的保留率、回購金額、顧客終身價值彙整成表格，了解各族群的消費狀態及性質，並擬定相對應的行銷策略。
+```{r}
+#各族群的保留率、回購金額、顧客終身價值
+sapply(B[,11:13], tapply, B$Status, mean)
+```
+
+##### C1族群的預測保留率和購買金額
+```{r}
+par(mfrow=c(1,2), mar=c(4,3,3,2), cex=0.8)
+hist(B$ProbRetain[B$Status=="C1"],main="Probablity of Retain",xlab="")
+hist(log(B$PredRevnue[B$Status=="C1"],10),main="Predict of Revenue",xlab="")
+```
+
+##### C1族群 各年齡的消費分布&各地區的消費分布
+```{r}
+Target=filter(B,Status=="C1")
+par(mfrow=c(1,2), mar=c(4,3,3,2), cex=0.8)
+barplot(tapply(Target$m,Target$age,sum),main="C1族群各年齡的消費分布")
+barplot(tapply(Target$m,Target$are,sum),main="C1族群各地區的消費分布")
+```
+
+<br><hr>
+
+#### 模擬成本與效果的關係
+
+##### 帶有參數的函數
+```{r}
+m=0.12; a=10; b=15
+curve(m*plogis((10/a)*(x-b)), 5, 25, lwd=2, ylim=c(0, 0.15),
+      main=TeX('$m \\cdot Logis(10(x - b)/a)$'), ylab="f(x)")
+abline(h=seq(0,0.2,0.05),v=seq(0,30,5),col='lightgrey',lty=2)
+```
+
+$$k_0=f(x)=m \cdot Logis[10(x - b)/a]$$
+
+##### 使用`manipulate`套件做模擬
+`manipulate()`不能在Rmd直接執行，需要另外開一個R窗格，把以下程式碼Copy過去跑
+```{r eval=F}
+manipulate({
+  curve(m*plogis((10/a)*(x-b)), 0, 30, lwd=2, ylim=c(0, 0.25),
+        main = TeX('$m \\cdot Logis(10(x - b)/a)$'), ylab="f(x)")
+  abline(h=seq(0,0.2,0.05),v=seq(0,30,5),col='lightgrey',lty=2)
+},
+m = slider(0.05, 0.25,  0.20, step=0.01),
+a = slider(  10,   30,    20, step=1),
+b = slider(   4,   20,    15, step=1)
+) 
+```
+
+
+##### 使用模擬方法找到最佳策略(參數)，情境一
+##### 回購率上升速度快，但須投入較多資金
+```{r}
+m=0.12; a=15; b=30
+do.call(rbind, lapply(seq(5,40,0.5), function(c){
+  p = m*plogis((10/a)*(c-b))
+  Target %>% mutate(
+    PI = ifelse(ProbRetain<=(1-p), p, 1-ProbRetain) * PredRevnue - c
+  ) %>%
+    group_by(Status) %>% summarise(
+      Cost = c,
+      Group.Sz = n(),
+      No.Target = sum(PI>0),
+      AvgROI = mean(PI[PI>0]),
+      TotalROI = sum(PI[PI>0])
+    ) } ) ) %>% 
+  ggplot(aes(x=Cost, y=TotalROI, col=Status)) +
+  geom_line(size=1.2) +
+  ggtitle("Cost Effeciency per Segment ")
+```
+
+
+#情境二
+```{r}
+m=0.12; a=30; b=15
+do.call(rbind, lapply(seq(5,40,0.5), function(c){
+  p = m*plogis((10/a)*(c-b))
+  Target %>% mutate(
+    PI = ifelse(ProbRetain<=(1-p), p, 1-ProbRetain) * PredRevnue - c
+  ) %>%
+    group_by(Status) %>% summarise(
+      Cost = c,
+      Group.Sz = n(),
+      No.Target = sum(PI>0),
+      AvgROI = mean(PI[PI>0]),
+      TotalROI = sum(PI[PI>0])
+    ) } ) ) %>% 
+  ggplot(aes(x=Cost, y=TotalROI, col=Status)) +
+  geom_line(size=1.2) +
+  ggtitle("Cost Effeciency per Segment ")
+
+```
+
+```{r eval=F}
+manipulate({
+  do.call(rbind, lapply(seq(5,40,0.5), function(c){
+    p = m*plogis((10/a)*(c-b))
+    B %>% mutate(
+      PI = ifelse(ProbRetain<=(1-p), p, 1-ProbRetain) * PredRevnue - c
+    ) %>%
+      group_by(Status) %>% summarise(
+        Cost = c,
+        Group.Sz = n(),
+        No.Target = sum(PI>0),
+        AvgROI = mean(PI[PI>0]),
+        TotalROI = sum(PI[PI>0])
+      ) } ) ) %>% 
+    ggplot(aes(x=Cost, y=TotalROI, col=Status)) +
+    geom_line(size=1.2) +
+    ggtitle("Cost Effeciency per Segment ")
+},
+m = slider(0.05, 0.25,  0.20, step=0.01),
+a = slider(  10,   30,    15, step=1),
+b = slider(   4,   20,    15, step=1)
+) 
+```
+
+**情境一回購機率提升較快，但成本需要花比較多**
+**情境二回購機率提升較慢，但成本相對較少**
+**兩者收益差不多主要還是差在回購機率的提升速度**
+**我們傾向細水長流型**
+**除了成本較低**
+**以及曇花一現的狀況外**
+**最主要我們可以更加瞭解客群**
+**往後若想要加強CRM的部分**
+**我們能有更多的資料方便我們著手**
+
